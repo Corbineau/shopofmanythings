@@ -1,14 +1,18 @@
-import Table from 'cli-table';
+require('dotenv').config();
+var Table = require('cli-table');
 var mysql = require('mysql');
 var inquirer = require('inquirer');
+var config = require('./config');
 // create the connection information for the sql database
+
 var connection = mysql.createConnection({
   //everything is in the config. 
   host: config.dbHost,
   port: config.port,
   user: config.dbUser,
-  password: config.pass,
-  database: config.db
+  password: config.dbPass,
+  database: config.db,
+  connectTimeout: 30000
 });
 
 const table = new Table({
@@ -18,7 +22,7 @@ const table = new Table({
 
 // connect to the mysql server and sql database
 connection.connect(function (err) {
-  if (err) throw err;
+  if (err) throw err.code;
   // run the start function after the connection is made to prompt the user
   start();
 });
@@ -28,7 +32,13 @@ connection.connect(function (err) {
 var cart = {
   totalPrice: 0,
   items: [],
-  itemCount: this.items.length,
+  itemCount: function () {
+    if (this.items.length) {
+      return this.items.length;
+    } else {
+      return 0;
+    }
+  },
 
   addItem: function (item) {
     this.items.push(item);
@@ -61,7 +71,16 @@ var cart = {
   showCart: new Table({
     head: ['item', 'price', 'quantity', 'total']
     , colWidths: [100, 100, 100, 100]
-  })
+  }),
+
+  fillCart: function () {
+    for (var i = 0; i < this.items.length; i++) {
+      this.showCart.push(
+        [this.showCart[i].name, this.showCart.price, this.showCart.quantity]
+      );
+    };
+    console.log(showCart.toString());
+  }
 
 }
 
@@ -100,8 +119,7 @@ const viewAll = () => {
       );
     };
     console.log(table.toString());
-  }
-  )
+  })
 }
 
 
@@ -165,4 +183,5 @@ const store = () => {
 
       })
 
-    }
+    })
+}
