@@ -12,8 +12,8 @@ var connection = mysql.createConnection({
 });
 
 const table = new Table({
-  head: ['item id', 'product name', 'product description', 'department', 'price', 'no. in stock' ]
-, colWidths: [50, 100, 300, 100, 50, 50]
+  head: ['item id', 'product name', 'product description', 'department', 'price', 'no. in stock']
+  , colWidths: [50, 100, 300, 100, 50, 50]
 });
 
 // connect to the mysql server and sql database
@@ -44,7 +44,7 @@ var cart = {
     this.tallyCart();
   },
 
-  tallyCart: function() {
+  tallyCart: function () {
     for (let i = 0; i < this.items.length; i++) {
       this.totalPrice += (this.items[i].price * this.items[i].quantity);
     }
@@ -54,8 +54,14 @@ var cart = {
   empty: function () {
     this.itemCount = 0;
     this.totalPrice = 0;
+    this.items = [];
 
-  }
+  },
+
+  showCart: new Table({
+    head: ['item', 'price', 'quantity', 'total']
+    , colWidths: [100, 100, 100, 100]
+  })
 
 }
 
@@ -90,74 +96,73 @@ const viewAll = () => {
     // build a pretty table
     for (var i = 0; i < res.length; i++) {
       table.push(
-          [res[i].item_id, res[i].product_name, res[i].product_desc, res[i].department_name, res[i].price, res[i].stock_quantity]
+        [res[i].item_id, res[i].product_name, res[i].product_desc, res[i].department_name, res[i].price, res[i].stock_quantity]
       );
     };
     console.log(table.toString());
-    }
-  )}
+  }
+  )
+}
 
 
 const store = () => {
-    inquirer.prompt({
-      type: "rawlist",
-      message: "Select the ID of the item you'd like to purchase",
-      choices: function () {
-        var choiceArray = [];
-        for (var i = 0; i < results.length; i++) {
-          choiceArray.push(results[i].item_id);
-        }
-        return choiceArray;
-      },
-      name: "item"
+  inquirer.prompt({
+    type: "rawlist",
+    message: "Select the ID of the item you'd like to purchase",
+    choices: function () {
+      var choiceArray = [];
+      for (var i = 0; i < results.length; i++) {
+        choiceArray.push(results[i].item_id);
+      }
+      return choiceArray;
     },
-      {
-        type: "input",
-        message: "how many do you want?",
-        name: "quantity",
-        validate: inStock
-      }).then(function (ans) {
-        //find the chosen item and get its relevant features
-        let query = "SELECT product_name, price, stock_quantity FROM products WHERE ?";
-        connection.query(query, { product_id: ans.item }, function (res) {
-          let newItem = {
-            name: res.product_name,
-            price: res.price,
-            quantity: ans.quantity
-            //figure out where to add the functionality to change the quantity of an item in the cart and make the price changes
-          }
-          cart.addItem(newItem);
-          return newItem
-        })
-      }).catch(function (err) {
-        throw err;
-      }).then(function (res) {
-        //ask if they want more stuff
-        inquirer.prompt([
-          {
-            type: "confirm",
-            message: "would you like to add anything else?",
-            name: "check"
-          }
-        ]).then(function(ans){
-          if(ans.check){
-            store();
-          } else {
-            inquirer.prompt([
-              {
-                type: "confirm",
-                message: `you have the following items in your cart:
+    name: "item"
+  },
+    {
+      type: "input",
+      message: "how many do you want?",
+      name: "quantity",
+      validate: inStock
+    }).then(function (ans) {
+      //find the chosen item and get its relevant features
+      let query = "SELECT product_name, price, stock_quantity FROM products WHERE ?";
+      connection.query(query, { product_id: ans.item }, function (res) {
+        let newItem = {
+          name: res.product_name,
+          price: res.price,
+          quantity: ans.quantity
+          //figure out where to add the functionality to change the quantity of an item in the cart and make the price changes
+        }
+        cart.addItem(newItem);
+        return newItem
+      })
+    }).catch(function (err) {
+      throw err;
+    }).then(function (res) {
+      //ask if they want more stuff
+      inquirer.prompt([
+        {
+          type: "confirm",
+          message: "would you like to add anything else?",
+          name: "check"
+        }
+      ]).then(function (ans) {
+        if (ans.check) {
+          store();
+        } else {
+          inquirer.prompt([
+            {
+              type: "confirm",
+              message: `you have the following items in your cart:
                 
                 `,
-                name: "total"
-              }
-          
-            ])
+              name: "total"
+            }
 
-      }
+          ])
 
-      )
+        }
 
-  })
+      })
 
-}
+    }
