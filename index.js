@@ -1,6 +1,6 @@
 require('dotenv').config();
 var Table = require('cli-table');
-var mysql = require('mysql');
+var mysql = require('mysql2');
 var inquirer = require('inquirer');
 var config = require('./config');
 // create the connection information for the sql database
@@ -54,6 +54,10 @@ var cart = {
     this.tallyCart();
   },
 
+  tallyItem: function (item) {
+   return (item.quantity * item.price)
+  },
+
   tallyCart: function () {
     for (let i = 0; i < this.items.length; i++) {
       this.totalPrice += (this.items[i].price * this.items[i].quantity);
@@ -76,7 +80,7 @@ var cart = {
   fillCart: function () {
     for (var i = 0; i < this.items.length; i++) {
       this.showCart.push(
-        [this.showCart[i].name, this.showCart.price, this.showCart.quantity]
+        [this.items[i].name, this.items[i].price, this.items[i].quantity, tallyItem(items[i]) ]
       );
     };
     console.log(showCart.toString());
@@ -171,13 +175,15 @@ const store = () => {
           inquirer.prompt([
             {
               type: "confirm",
-              message: `you have the following items in your cart:
-                
-                `,
+              message: `you have ${cart.itemCount} items in your cart: \n
+              ${cart.fillCart()}/n
+              For a total of ${cart.tallyCart}. \n  
+              Would you like to make changes?`,
               name: "total"
             }
-
-          ])
+          ]).then(function(ans){
+            
+          })
 
         }
 
