@@ -1,31 +1,29 @@
 require('dotenv').config();
 var Table = require('cli-table');
-var mysql = require('mysql2');
+var mysql = require('mysql');
 var inquirer = require('inquirer');
 var config = require('./config');
 // create the connection information for the sql database
 
 var connection = mysql.createConnection({
   //everything is in the config. 
-  host: config.dbHost,
-  port: config.port,
-  user: config.dbUser,
+  host: "localhost",
+  port: 3306,
+  user: "root",
   password: config.dbPass,
   database: config.db,
+  // socketPath: '/var/run/mysqld/mysqld.sock',
   connectTimeout: 30000
 });
 
 const table = new Table({
   head: ['item id', 'product name', 'product description', 'department', 'price', 'no. in stock']
-  , colWidths: [50, 100, 300, 100, 50, 50]
+  , colWidths: [10, 25, 25, 25, 10, 10]
 });
 
-// connect to the mysql server and sql database
-connection.connect(function (err) {
-  if (err) throw err.code;
-  // run the start function after the connection is made to prompt the user
-  start();
-});
+var products = [];
+
+
 
 //shopping cart? I don't know if I have the wherewithal, but perhaps something like...
 
@@ -105,40 +103,77 @@ const inStock = (num, ans) => {
 
 }
 
+const isItem = (input) => {
+  for(let i = 0; products.length; i++) {
+    if (products[i].item_id === input) {
+      return true
+    } else {
+      console.log("please enter a valid item number.")
+    }
+  }
+}
+
+// connect to the mysql server and sql database
+connection.connect(function (err) {
+  if (err) throw err;
+  // run the start function after the connection is made to initialize everything.
+  start();
+  // connection.end();
+});
 
 const start = function () {
   cart.empty();
-  viewAll();
-  store();
-}
-
-
-const viewAll = () => {
-  connection.query("SELECT * FROM products", function (err, res) {
-    if (err) throw err;
-    // build a pretty table
+  connection.query("SELECT * FROM products", function (res, err) {
+    if(err){ throw err};
     for (var i = 0; i < res.length; i++) {
-      table.push(
-        [res[i].item_id, res[i].product_name, res[i].product_desc, res[i].department_name, res[i].price, res[i].stock_quantity]
-      );
+        table.push(
+          [res[i].item_id, res[i].product_name, p[i].product_desc, res[i].department_name, res[i].price, res[i].stock_quantity]
+        );
     };
-    console.log(table.toString());
+      console.log(table.toString());
+    // connection.end();
   })
 }
 
 
+// const viewAll = () => {
+//   connection.query("SELECT * FROM products", function (err, res) {
+//     if (err) throw err;
+//     // build a pretty table
+//     for (var i = 0; i < res.length; i++) {
+//       table.push(
+//         [res[i].item_id, res[i].product_name, res[i].product_desc, res[i].department_name, res[i].price, res[i].stock_quantity]
+//       );
+//     };
+//     console.log(table.toString());
+//   })
+// }
+
+const showTable = (p) => {
+  
+}
+
+var search = () => {
+  };
+ 
+    
+
+
+
 const store = () => {
   inquirer.prompt({
-    type: "rawlist",
-    message: "Select the ID of the item you'd like to purchase",
-    choices: function () {
-      var choiceArray = [];
-      for (var i = 0; i < results.length; i++) {
-        choiceArray.push(results[i].item_id);
-      }
-      return choiceArray;
-    },
-    name: "item"
+    type: "input",
+    message: `Select the ID of the item you'd like to purchase:`,
+    // choices: function () {
+    //   var choiceArray = [];
+    //   for (var i = 0; i < products.length; i++) {
+    //     // console.log(products);
+    //     choiceArray.push(products[i].item_id);
+    //   }
+    //   return choiceArray;
+    // },
+    name: "item",
+    validate: isItem
   },
     {
       type: "input",
@@ -182,12 +217,13 @@ const store = () => {
               name: "total"
             }
           ]).then(function(ans){
-            
+
           })
 
         }
 
       })
+    
 
-    })
-}
+})
+  }
