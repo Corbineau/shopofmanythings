@@ -17,8 +17,8 @@ var connection = mysql.createConnection({
 });
 
 const table = new Table({
-  head: ['item id', 'product name', 'product description', 'department', 'price', 'no. in stock']
-  , colWidths: [10, 25, 25, 25, 10, 10]
+  head: ['item id', 'product name', 'product description', 'department', 'price', '# in stock']
+  , colWidths: [10, 25, 25, 25, 10, 15]
 });
 
 var products = [];
@@ -104,36 +104,50 @@ const inStock = (num, ans) => {
 }
 
 const isItem = (input) => {
-  for(let i = 0; products.length; i++) {
-    if (products[i].item_id === input) {
-      return true
-    } else {
-      console.log("please enter a valid item number.")
-    }
+  num = parseInt(input);
+  let check = products.find(product => product.item_id === num);
+  if(check) {
+    return true
+  } else {
+    console.log(`\n please enter a valid item id.`)
   }
+
 }
+
+
+
+  // if(!valid) {
+  //   console.log("please enter a valid item id.")
+  // }
+  
+
+
+
 
 // connect to the mysql server and sql database
 connection.connect(function (err) {
   if (err) throw err;
   // run the start function after the connection is made to initialize everything.
+  console.log("connected!");
   start();
   // connection.end();
 });
 
 const start = function () {
   cart.empty();
-  connection.query("SELECT * FROM products", function (res, err) {
-    if(err){ throw err};
-    for (var i = 0; i < res.length; i++) {
+  connection.query("SELECT * FROM products", function (err, res) {
+    if (err) throw err;
+    products = res;
+    for (let i = 0; i < res.length; i++) {
         table.push(
-          [res[i].item_id, res[i].product_name, p[i].product_desc, res[i].department_name, res[i].price, res[i].stock_quantity]
+          [res[i].item_id, res[i].product_name, res[i].product_desc, res[i].department_name, res[i].price, res[i].stock_quantity]
         );
     };
       console.log(table.toString());
     // connection.end();
+    console.log(products);
+    store();
   })
-}
 
 
 // const viewAll = () => {
@@ -226,4 +240,4 @@ const store = () => {
     
 
 })
-  }
+  }}
