@@ -36,6 +36,7 @@ build/Release
 node_modules/
 jspm_packages/
 
+
 # TypeScript v1 declaration files
 typings/
 
@@ -61,7 +62,7 @@ typings/
 .next
 
 # configurations
+package-lock.json
 
 #mysql
 *.sql
-
